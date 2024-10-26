@@ -22,6 +22,7 @@ func NewService(repository Repository) Service {
 		time.Duration(2) * time.Second,
 	}
 }
+
 func (s *service) CreateUser(c context.Context, req *CreateUserReq) (*CreateUserRes, error) {
 	ctx, cancel := context.WithTimeout(c, s.timeout)
 	defer cancel()
@@ -62,6 +63,7 @@ type MyJWTClaims struct {
 func (s *service) Login(c context.Context, req *LoginUserReq) (*LoginUserRes, error) {
 	ctx, cancel := context.WithTimeout(c, s.timeout)
 	defer cancel()
+
 	u, err := s.Repository.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		return &LoginUserRes{}, err
@@ -77,12 +79,11 @@ func (s *service) Login(c context.Context, req *LoginUserReq) (*LoginUserRes, er
 		Username: u.Username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    strconv.Itoa(int(u.ID)),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 		},
 	})
 
 	ss, err := token.SignedString([]byte(secretKey))
-
 	if err != nil {
 		return &LoginUserRes{}, err
 	}
